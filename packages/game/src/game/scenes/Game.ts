@@ -131,7 +131,7 @@ export class Game extends Scene {
             this.initCameraGameOver(this.otherPlayer.get(id) as OtherPlayer)
 
             setTimeout(() => {
-                this.socket.emit("revive", this.myName)
+                this.socket.emit("revive")
             }, 5000)
 
         })

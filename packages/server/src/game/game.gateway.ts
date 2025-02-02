@@ -39,7 +39,7 @@ export class GameGateway {
   }
 
 
-  
+
   handleDisconnect(client: Socket) {
     console.log("Disconnect")
     this.player.delete(client.id);
@@ -98,7 +98,7 @@ export class GameGateway {
   }
 
   @SubscribeMessage("revive")
-  handleRevive(client: Socket, name : string) {
+  handleRevive(client: Socket) {
     const spawns = Math.floor(Math.random() * 7)
     client.emit("welcome", { id: client.id, spawnPoint : spawns,chestId : this.chest ,players: Array.from(this.player.values()) });
   }
