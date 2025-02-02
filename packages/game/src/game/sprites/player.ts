@@ -58,7 +58,7 @@ export default class Player extends Actor {
 
     if(isMove && !this.delayMoveSocket) {
       this.delayMoveSocket = true
-      this.scene.game.events.emit("move", { x: this.x, y: this.y, health: this.hp })
+      this.scene.game.events.emit("player-update", { x: this.x, y: this.y, health: this.hp })
       setTimeout(() => {
         this.delayMoveSocket = false
       }, 1000/60)
