@@ -5,6 +5,7 @@ export default class Player extends Actor {
   private keyS: Phaser.Input.Keyboard.Key;
   private keyD: Phaser.Input.Keyboard.Key;
   private keySpace: Phaser.Input.Keyboard.Key;
+  private delayMoveSocket = false
   
   constructor(scene: Phaser.Scene, x: number, y: number, name : string) {
     super(scene, x, y, name);
@@ -22,38 +23,43 @@ export default class Player extends Actor {
 
   update(): void {
     super.update()
-   
+    let isMove = true 
     if (this.body == null) return
     this.getBody().setVelocity(0);
     if(this.status == "attack") return
     if (this.keyW?.isDown) {
       this.body.velocity.y = -110;
-      this.scene.game.events.emit("player-update", { x: this.x, y: this.y, health: this.hp })
+
 
     }
     if (this.keyA?.isDown) {
       this.body.velocity.x = -110;
       this.checkFlip();
       this.getBody().setOffset(48, 15);
-      this.scene.game.events.emit("player-update", { x: this.x, y: this.y, health: this.hp })
 
     }
     if (this.keyS?.isDown) {
       this.body.velocity.y = 110;
-      this.scene.game.events.emit("player-update", { x: this.x, y: this.y, health: this.hp })
 
     }
     if (this.keyD?.isDown) {
       this.body.velocity.x = 110;
       this.checkFlip();
       this.getBody().setOffset(15, 15);
-      this.scene.game.events.emit("player-update", { x: this.x, y: this.y, health: this.hp })
 
     }
     if (this.keySpace?.isDown) {
       this.attack();
       this.scene.game.events.emit("player-attack", { x: this.x, y: this.y, health: this.hp })
 
+    }
+
+    if(isMove && !this.delayMoveSocket) {
+      this.delayMoveSocket = true
+      this.scene.game.events.emit("player-move", { x: this.x, y: this.y, health: this.hp })
+      setTimeout(() => {
+        this.delayMoveSocket = false
+      }, 1000/60)
     }
 
   }
