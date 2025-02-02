@@ -75,7 +75,7 @@ export class GameGateway {
     client.broadcast.emit('damage', player)
 
     setTimeout(() => {
-      this.chest = Math.floor(Math.random() * 13);
+      this.chest = Math.floor(Math.random() * 10);
       this.server.emit('chest', this.chest);
     }, 10000)
 
