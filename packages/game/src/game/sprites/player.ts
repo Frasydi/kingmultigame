@@ -29,6 +29,7 @@ export default class Player extends Actor {
     if(this.status == "attack") return
     if (this.keyW?.isDown) {
       this.body.velocity.y = -110;
+      isMove = true
 
 
     }
@@ -36,22 +37,23 @@ export default class Player extends Actor {
       this.body.velocity.x = -110;
       this.checkFlip();
       this.getBody().setOffset(48, 15);
+      isMove = true
 
     }
     if (this.keyS?.isDown) {
       this.body.velocity.y = 110;
+      isMove = true
 
     }
     if (this.keyD?.isDown) {
       this.body.velocity.x = 110;
       this.checkFlip();
       this.getBody().setOffset(15, 15);
-
+      isMove = true
     }
     if (this.keySpace?.isDown) {
       this.attack();
       this.scene.game.events.emit("player-attack", { x: this.x, y: this.y, health: this.hp })
-
     }
 
     if(isMove && !this.delayMoveSocket) {
