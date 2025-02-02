@@ -71,6 +71,8 @@ export class GameGateway {
 
       const player = this.player.get(client.id);
 
+      if(player == null) return
+
       player.x = x;
       player.y = y;
 
@@ -130,7 +132,7 @@ export class GameGateway {
 
     } catch (err) {
       console.log(err)
-      
+
     }
     return
 
