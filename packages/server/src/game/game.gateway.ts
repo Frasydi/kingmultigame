@@ -95,9 +95,14 @@ export class GameGateway {
     player.health = health;
 
     if (player.health <= 0) {
-      this.player.delete(client.id);
-      client.emit('game_over', attacker);
-      client.broadcast.emit('player_disconnect', client.id);
+      try {
+
+        this.player.delete(client.id);
+        client.emit('game_over', attacker);
+        client.broadcast.emit('player_disconnect', client.id);
+      }catch(err) {
+        console.log(err)
+      }
     } else {
       client.broadcast.emit('damage', player)
     }
