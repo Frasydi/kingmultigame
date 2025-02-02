@@ -12,6 +12,7 @@ export default class OtherPlayer extends Actor {
     this.y = y;
     this.id = id
     this.hp = health
+    this.hpText.destroy()
     this.hpText = this.scene.add.text(this.x, this.y - this.height, this.hp.toString())
 
 
