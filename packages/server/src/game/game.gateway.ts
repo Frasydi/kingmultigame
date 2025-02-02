@@ -35,6 +35,8 @@ export class GameGateway {
   handleConnection(client: Socket) {
     const spawns = Math.floor(Math.random() * 7)
     client.emit("welcome", { id: client.id, spawnPoint : spawns,chestId : this.chest ,players: Array.from(this.player.values()) });
+
+    return
     
   }
 
@@ -44,6 +46,7 @@ export class GameGateway {
     console.log("Disconnect")
     this.player.delete(client.id);
     client.broadcast.emit('player_disconnect', client.id);
+    return
   }
 
   @SubscribeMessage("join") 
@@ -61,6 +64,8 @@ export class GameGateway {
     player.y = data.y;
 
     client.broadcast.emit('move', player);
+
+    return
   }
 
   @SubscribeMessage("chest")
@@ -76,6 +81,8 @@ export class GameGateway {
 
     this.chest = -1
     client.broadcast.emit('chest', -1);
+
+    return
 
   }
 
@@ -95,17 +102,21 @@ export class GameGateway {
       client.broadcast.emit('damage', player)
     }
 
+    return
+
   }
 
   @SubscribeMessage("revive")
   handleRevive(client: Socket) {
     const spawns = Math.floor(Math.random() * 7)
     client.emit("welcome", { id: client.id, spawnPoint : spawns,chestId : this.chest ,players: Array.from(this.player.values()) });
+    return
   }
 
   @SubscribeMessage("attack")
   handleAttack(client: Socket) {
     client.broadcast.emit('attack', client.id)
+    return
   }
 
 
