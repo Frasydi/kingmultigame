@@ -92,17 +92,27 @@ export class GameGateway {
     attacker: string
   }) {
     const player = this.player.get(client.id);
+    console.log(player)
+    if(player == null) {
+      console.log(health)
+      console.log(attacker)
+      console.log(client.id)
+      return
+    }
     player.health = health;
-
+      
     if (player.health <= 0) {
-      try {
-
+        console.log("-")
         this.player.delete(client.id);
-        client.emit('game_over', attacker);
+        console.log("--")
+        console.log(attacker)
+        client.emit('game_over', {attacker});
+        console.log("Game Over")
+        console.log("---")
         client.broadcast.emit('player_disconnect', client.id);
-      }catch(err) {
-        console.log(err)
-      }
+        console.log(client.id)
+        console.log("----")
+      
     } else {
       client.broadcast.emit('damage', player)
     }

@@ -126,7 +126,8 @@ export class Game extends Scene {
 
 
 
-        this.socket.on("game_over", ({id }:{id: string}) => {
+        this.socket.on("game_over", ({attacker : id }:{attacker: string}) => {
+            console.log(id)
             this.player.destroy()
             this.initCameraGameOver(this.otherPlayer.get(id) as OtherPlayer)
 
@@ -207,6 +208,7 @@ export class Game extends Scene {
                     this.physics.add.overlap(otherPlayer, this.player, (obj1, obj2) => {
                         
                         if (otherPlayer.status == "attack") {
+                            console.log(otherPlayer.id)
                             this.player.getDamage(10)
                             this.socket.emit("damage", { health: this.player.getHPValue(), attacker: otherPlayer.id })
                             this.cameras.main.flash();
