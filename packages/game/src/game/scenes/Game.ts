@@ -126,7 +126,7 @@ export class Game extends Scene {
 
 
 
-        this.socket.on("game_over", (id: string) => {
+        this.socket.on("game_over", ({id }:{id: string}) => {
             this.player.destroy()
             this.initCameraGameOver(this.otherPlayer.get(id) as OtherPlayer)
 
