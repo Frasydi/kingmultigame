@@ -43,7 +43,8 @@ export class Game extends Scene {
 
     private initSocket(): void {
         this.socket = io('/socket', {
-            path: "/socket"
+            path: "/socket",
+            transports : ["websocket"]
         }); // Replace with your server URL
 
         this.socket.on('connect', () => {
