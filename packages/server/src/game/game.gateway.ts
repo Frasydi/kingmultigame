@@ -8,7 +8,7 @@ interface Player {
   x: number;
   y: number;
   id: string;
-  name : string;
+  name: string;
 }
 
 @WebSocketGateway({
@@ -16,7 +16,7 @@ interface Player {
     origin: "*"
   },
   path: "/socket",
-  namespace : "/socket"
+  namespace: "/socket"
 })
 export class GameGateway {
   @WebSocketServer()
@@ -34,10 +34,10 @@ export class GameGateway {
 
   handleConnection(client: Socket) {
     const spawns = Math.floor(Math.random() * 7)
-    client.emit("welcome", { id: client.id, spawnPoint : spawns,chestId : this.chest ,players: Array.from(this.player.values()) });
+    client.emit("welcome", { id: client.id, spawnPoint: spawns, chestId: this.chest, players: Array.from(this.player.values()) });
 
     return
-    
+
   }
 
 
@@ -49,74 +49,89 @@ export class GameGateway {
     return
   }
 
-  @SubscribeMessage("join") 
-  handleJoin(client: Socket, {name, x, y} : {name : string, x : number, y : number}) {
+  @SubscribeMessage("join")
+  handleJoin(client: Socket, { name, x, y }: { name: string, x: number, y: number }) {
     console.log("Join")
     this.player.set(client.id, { health: 100, x, y, id: client.id, name });
     client.broadcast.emit('new_player', { health: 100, x, y, id: client.id, name });
-    return {chestId : this.chest}
+    return { chestId: this.chest }
   }
 
   @SubscribeMessage("move")
-  handleMove(client: Socket, data: { x: number, y: number }) {
-    const player = this.player.get(client.id);
-    player.x = data.x;
-    player.y = data.y;
+  handleMove(client: Socket, data: unknown) {
+    try {
 
-    client.broadcast.emit('move', player);
+      if (!data || typeof data !== 'object') throw new Error('Invalid move data');
 
-    return
+      const { x, y } = data as { x: number; y: number };
+
+      if (typeof x !== 'number' || typeof y !== 'number') {
+        throw new Error('Invalid coordinate format');
+      }
+
+      const player = this.player.get(client.id);
+
+      player.x = x;
+      player.y = y;
+
+      client.broadcast.emit('move', player);
+
+      return
+    } catch (err) {
+      console.log(err)
+    }
   }
 
   @SubscribeMessage("chest")
   handleChest(client: Socket) {
-    const player = this.player.get(client.id);
-    player.health += 50;
-    client.broadcast.emit('damage', player)
-
-    setTimeout(() => {
-      this.chest = Math.floor(Math.random() * 10);
-      this.server.emit('chest', this.chest);
-    }, 10000)
-
-    this.chest = -1
-    client.broadcast.emit('chest', -1);
-
-    return
+    try {
+      const player = this.player.get(client.id);
+      if (!player) return;
+  
+      player.health += 50;
+      client.broadcast.emit('damage', player);
+  
+      setTimeout(() => {
+        this.chest = Math.floor(Math.random() * 10);
+        this.server.emit('chest', this.chest);
+      }, 10000);
+  
+      this.chest = -1;
+      client.broadcast.emit('chest', -1);
+    } catch (error) {
+      console.error('Chest handler error:', error);
+      client.emit('error', { message: 'Chest operation failed' });
+    }
 
   }
 
   @SubscribeMessage("damage")
-  handleDamage(client: Socket, { attacker, health }: {
-    health: number,
-    attacker: string
-  }) {
-    const player = this.player.get(client.id);
-    console.log(player)
-    if(player == null) {
-      console.log(health)
-      console.log(attacker)
-      console.log(client.id)
-      return
-    }
-    player.health = health;
-      
-    if (player.health <= 0) {
-        console.log("-")
-        this.player.delete(client.id);
-        console.log("--")
-        console.log(attacker)
-        client.emit('game_over', {attacker});
-        console.log("Game Over")
-        console.log("---")
-        client.broadcast.emit('player_disconnect', client.id);
-        console.log(client.id)
-        console.log("----")
-      
-    } else {
-      client.broadcast.emit('damage', player)
-    }
+  handleDamage(client: Socket, data: unknown) {
+    console.log(data)
+    if (data == null || typeof data !== 'object') return
+    try {
 
+      const { attacker, health } = data as { attacker: string, health: number }
+      const player = this.player.get(client.id);
+      // console.log(player)
+      if (player == null) return
+      player.health = health;
+
+      if (player.health <= 0) {
+        this.player.delete(client.id);
+        if(client.connected) {
+          client.emit('game_over', { attacker });
+        }
+        client.broadcast.emit('player_disconnect', client.id);
+
+      } else {
+        client.broadcast.emit('damage', player)
+      }
+
+    } catch (err) {
+      console.log(err)
+      
+    }
     return
 
   }
@@ -124,7 +139,7 @@ export class GameGateway {
   @SubscribeMessage("revive")
   handleRevive(client: Socket) {
     const spawns = Math.floor(Math.random() * 7)
-    client.emit("welcome", { id: client.id, spawnPoint : spawns,chestId : this.chest ,players: Array.from(this.player.values()) });
+    client.emit("welcome", { id: client.id, spawnPoint: spawns, chestId: this.chest, players: Array.from(this.player.values()) });
     return
   }
 

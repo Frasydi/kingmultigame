@@ -55,7 +55,8 @@ export class Game extends Scene {
             console.log(err)
         })
 
-        this.socket.on('disconnect', () => {
+        this.socket.on('disconnect', (res) => {
+            console.log(res)
             console.log('Disconnected from server');
         });
 
@@ -127,16 +128,27 @@ export class Game extends Scene {
 
 
 
-        this.socket.on("game_over", ({attacker : id }:{attacker: string}) => {
-            console.log(id)
-            this.player.destroy()
-            this.initCameraGameOver(this.otherPlayer.get(id) as OtherPlayer)
-
+        this.socket.on('error', (error: { message: string }) => {
+            console.error('Socket error:', error.message);
+            // Add visual feedback to the player
+            this.game.events.emit('socket-error', error.message); 
+        });
+        
+        this.socket.on('game_over', ({ attacker }: { attacker: string }) => {
+            console.log('Game over by:', attacker);
+            if (this.player) {
+                this.player.destroy();
+                // Verify attacker exists before camera operation
+                if (this.otherPlayer.has(attacker)) {
+                    this.initCameraGameOver(this.otherPlayer.get(attacker) as OtherPlayer);
+                }
+            }
             setTimeout(() => {
-                this.socket.emit("revive")
-            }, 5000)
-
-        })
+                if (this.socket.connected) {
+                    this.socket.emit("revive");
+                }
+            }, 5000);
+        });
 
         // Handle other socket events
     }
@@ -162,8 +174,9 @@ export class Game extends Scene {
 
             this.physics.add.overlap(otherPlayer, this.player, (obj1, obj2) => {
                 if (otherPlayer.status == "attack") {
+                    if(this.player == null || otherPlayer == null) return
                     this.player.getDamage(10)
-                    this.socket.emit("damage", { health: this.player.getHPValue(), attacker: id })
+                    this.socket.emit("damage", { health: this.player.getHPValue(), attacker: otherPlayer.id })
                     this.cameras.main.flash();
 
                 }
@@ -209,7 +222,7 @@ export class Game extends Scene {
                     this.physics.add.overlap(otherPlayer, this.player, (obj1, obj2) => {
                         
                         if (otherPlayer.status == "attack") {
-                            console.log(otherPlayer.id)
+                            if(this.player == null || otherPlayer == null) return
                             this.player.getDamage(10)
                             this.socket.emit("damage", { health: this.player.getHPValue(), attacker: otherPlayer.id })
                             this.cameras.main.flash();

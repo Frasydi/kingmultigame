@@ -6,6 +6,8 @@ export default class Player extends Actor {
   private keyD: Phaser.Input.Keyboard.Key;
   private keySpace: Phaser.Input.Keyboard.Key;
   private delayMoveSocket = false
+  private isattackDelay = false 
+
   
   constructor(scene: Phaser.Scene, x: number, y: number, name : string) {
     super(scene, x, y, name);
@@ -51,9 +53,13 @@ export default class Player extends Actor {
       this.getBody().setOffset(15, 15);
       isMove = true
     }
-    if (this.keySpace?.isDown) {
+    if (this.keySpace?.isDown && !this.isattackDelay) {
+      this.isattackDelay = true
       this.attack();
       this.scene.game.events.emit("player-attack", { x: this.x, y: this.y, health: this.hp })
+      setTimeout(() => {
+        this.isattackDelay = false
+      }, 1000/60)
     }
 
     if(isMove && !this.delayMoveSocket) {
@@ -63,6 +69,8 @@ export default class Player extends Actor {
         this.delayMoveSocket = false
       }, 1000/60)
     }
+
+    
 
   }
 }
