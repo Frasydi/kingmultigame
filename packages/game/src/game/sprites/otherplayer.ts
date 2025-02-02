@@ -7,11 +7,13 @@ export default class OtherPlayer extends Actor {
   constructor(scene: Phaser.Scene, x: number, y: number, health : number, name : string, id : string) {
     super(scene, x, y, name);
     if(this.scene == null || this.scene.input == null || this.scene.input.keyboard == null) 
-        return
+      return
     this.x = x;
     this.y = y;
-    this.hp = health
     this.id = id
+    this.hp = health
+    this.hpText = this.scene.add.text(this.x, this.y - this.height, this.hp.toString())
+
 
   }
 
