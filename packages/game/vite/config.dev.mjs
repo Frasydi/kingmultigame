@@ -13,6 +13,7 @@ export default defineConfig({
         proxy : {
             '/socket' : {
                 target : 'http://localhost:9090',
+                ws : true
                 // rewrite : (text) => text.replace("/socket", ""),
             }
         }
