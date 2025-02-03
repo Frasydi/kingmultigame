@@ -57,6 +57,23 @@ export class GameGateway {
     return { chestId: this.chest }
   }
 
+  @SubscribeMessage("knockback")
+  handleKnockback(client: Socket, data: unknown) {
+    if (data == null || typeof data !== 'object') return
+    try {
+      const { x, y } = data as { x: number, y: number };
+      const player = this.player.get(client.id);
+      if (player == null) return
+      player.x = x;
+      player.y = y;
+      client.broadcast.emit('knockback', player);
+    } catch (error) {
+      console.error('Knockback handler error:', error);
+      client.emit('error', { message: 'Knockback operation failed' });
+    }
+    return
+  }
+
   @SubscribeMessage("move")
   handleMove(client: Socket, data: unknown) {
     try {

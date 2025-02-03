@@ -22,7 +22,7 @@ const config: Types.Core.GameConfig = {
         default :"arcade",
         arcade : {
             
-            debug : false
+            debug : true
         }
     },
     plugins: {

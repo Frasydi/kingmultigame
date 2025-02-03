@@ -5,7 +5,7 @@ export default class OtherPlayer extends Actor {
   public isAttack : boolean;
   public id : string;
   constructor(scene: Phaser.Scene, x: number, y: number, health : number, name : string, id : string) {
-    super(scene, x, y, name);
+    super(scene, x, y, name, "knight2");
     if(this.scene == null || this.scene.input == null || this.scene.input.keyboard == null) 
       return
     this.x = x;
@@ -18,30 +18,40 @@ export default class OtherPlayer extends Actor {
 
   }
 
-  setCur(x: number, y: number) {
+  setCur(x: number, y: number, disableFlipCheck : boolean = false ) {
 
-    if(this.x != x) {
+
+    if(this.x != x && !disableFlipCheck) {
 
         if(this.x > x ) {
             this.scaleX = -1
-            this.getBody().setOffset(48, 15);
+            this.ancor = "left"
+            this.getBody().setOffset(48, 70);
         } else {
             this.scaleX =  1
-            this.getBody().setOffset(15, 15);
+            this.ancor = "right"
+            this.getBody().setOffset(15, 70);
         }
+
     }
+
+
+    if((this.x != x || this.y != y) && !disableFlipCheck) {
+      this.status = "move"
+    }
+
 
     this.x = x;
     this.y = y;
-    // if(this.body) {
-    //     this.getBody().setVelocityX(this.xcur)
-    //     this.getBody().setVelocityY(this.ycur)
-    // }
+    
   }
 
 
 
   update(): void {
     super.update()
+
+    
+
   }
 }
