@@ -109,6 +109,8 @@ export class GameGateway {
   
       player.health += 50;
       client.broadcast.emit('damage', player);
+
+      client.broadcast.emit("chest-break", player)
   
       setTimeout(() => {
         this.chest = Math.floor(Math.random() * 10);
@@ -116,7 +118,7 @@ export class GameGateway {
       }, 10000);
   
       this.chest = -1;
-      client.broadcast.emit('chest', -1);
+      // client.broadcast.emit('chest', -1);
     } catch (error) {
       console.error('Chest handler error:', error);
       client.emit('error', { message: 'Chest operation failed' });

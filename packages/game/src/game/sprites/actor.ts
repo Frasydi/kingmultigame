@@ -81,11 +81,13 @@ class Actor extends Phaser.GameObjects.Sprite {
         super.destroy()
     }
 
-    public attack(): void {
+    public attack(distance : number = 0): void {
         if (this.status == "attack") return
         this.scene.sound.stopByKey("walk")
         this.status = "attack"
-        this.scene.sound.play("attack")
+        this.scene.sound.play("attack", {
+            volume : 1 - Phaser.Math.Clamp(distance / 600, 0, 1)
+        })
         this.play("attack").once("animationcomplete", () => {
             this.status = "idle"
         });

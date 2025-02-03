@@ -161,7 +161,10 @@ export class Game extends Scene {
 
         this.socket.on("attack", (player: string) => {
             if (this.otherPlayer.has(player)) {
-                this.otherPlayer.get(player)?.attack()
+                const otplayer = this.otherPlayer.get(player)
+                if(otplayer == null || this.player == null) return
+                const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, otplayer.x, otplayer.y);
+                this.otherPlayer.get(player)?.attack(distance)
             }
         })
 
@@ -184,6 +187,17 @@ export class Game extends Scene {
                 this.player.setHPValue(player.health)
 
             }
+        })
+
+        this.socket.on("chest-break", () => {
+            if(this.player == null || this.chests == null) return
+            const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, this.chests.x, this.chests.y)
+
+            this.sound.play("chest-destroy", {
+                volume : 1 - Phaser.Math.Clamp(distance / 600, 0, 1)
+            })
+            this.chests.destroy()
+            this.chests = null
         })
 
 
