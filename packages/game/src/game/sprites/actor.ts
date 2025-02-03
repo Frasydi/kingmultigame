@@ -1,4 +1,4 @@
-import { Physics, Scene } from "phaser";
+import { Physics } from "phaser";
 
 class Actor extends Phaser.GameObjects.Sprite {
     protected hp = 100;
@@ -103,7 +103,7 @@ class Actor extends Phaser.GameObjects.Sprite {
                 if(this.body == null) return
                 this.knockback = false
                 this.body.velocity.x = 0;    
-                
+
                 
             }, 300)
         }

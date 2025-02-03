@@ -19,7 +19,7 @@ export class Game extends Scene {
     private map!: Tilemaps.Tilemap;
     private tileset!: Tilemaps.Tileset | null;
     private wallsLayer!: Tilemaps.TilemapLayer | null;
-    private groundLayer!: Tilemaps.TilemapLayer | null;
+    // private groundLayer!: Tilemaps.TilemapLayer | null;
     private chests!: Phaser.GameObjects.Sprite | null;
     otherPlayer: Map<String, OtherPlayer> = new Map();
     private socket!: Socket;
@@ -35,9 +35,11 @@ export class Game extends Scene {
     private initMap(): void {
         this.map = this.make.tilemap({ key: 'map', tileWidth: 32, tileHeight: 32 });
         this.tileset = this.map.addTilesetImage('map', 'tiles') as Tilemaps.Tileset;
-        this.groundLayer = this.map.createLayer('ground', this.tileset, 0, 0);
+        // this.groundLayer = this.map.createLayer('ground', this.tileset, 0, 0);
+        this.map.createLayer('ground', this.tileset, 0, 0);
         this.wallsLayer = this.map.createLayer('wall', this.tileset, 0, 0);
         this.wallsLayer?.setCollisionByProperty({ collides: true });
+        this.wallsLayer?.setDepth(2)
         this.physics.world.setBounds(0, 0, this.wallsLayer?.width || 0, this.wallsLayer?.height || 0);
         this.sound.unlock();
         this.sound.play("music", {
@@ -190,16 +192,17 @@ export class Game extends Scene {
 
 
 
-    private showDebugWalls(): void {
-        const debugGraphics = this.add.graphics().setAlpha(0.7);
-        this.wallsLayer?.renderDebug(debugGraphics, {
-            tileColor: null,
-            collidingTileColor: new Phaser.Display.Color(243, 234, 48, 255),
-        });
-    }
+    // private showDebugWalls(): void {
+    //     const debugGraphics = this.add.graphics().setAlpha(0.7);
+    //     this.wallsLayer?.renderDebug(debugGraphics, {
+    //         tileColor: null,
+    //         collidingTileColor: new Phaser.Display.Color(243, 234, 48, 255),
+    //     });
+    // }
 
     private createPlayer(x: number, y: number) {
         this.player = new Player(this, x, y, this.myName);
+        this.player.setDepth(1)
 
     }
 
@@ -207,7 +210,7 @@ export class Game extends Scene {
         const otherPlayer = new OtherPlayer(this, x, y, health, name, id)
         if (this.player != null) {
 
-            this.physics.add.overlap(otherPlayer, this.player, (obj1, obj2) => {
+            this.physics.add.overlap(otherPlayer, this.player, (_obj1, _obj2) => {
                 if (otherPlayer.status == "attack") {
                     if (this.player == null || otherPlayer == null) return
                     if ((this.player == null || this.player.body == null) || (otherPlayer == null || otherPlayer.body == null)) return
@@ -229,7 +232,7 @@ export class Game extends Scene {
     }
 
     private updateOtherPlayer() {
-        this.otherPlayer.forEach((value, key) => {
+        this.otherPlayer.forEach((value, _key) => {
             value.update()
         })
     }
@@ -262,7 +265,7 @@ export class Game extends Scene {
 
 
                 this.otherPlayer.forEach(otherPlayer => {
-                    this.physics.add.overlap(otherPlayer, this.player, (obj1, obj2) => {
+                    this.physics.add.overlap(otherPlayer, this.player, (_obj1, _obj2) => {
 
                         if (otherPlayer.status == "attack") {
                             if ((this.player == null || this.player.body == null) || (otherPlayer == null || otherPlayer.body == null)) return
