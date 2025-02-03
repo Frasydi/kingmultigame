@@ -37,7 +37,7 @@ export default class OtherPlayer extends Actor {
     }
 
 
-    if((this.x != x || this.y != y) && !disableFlipCheck) {
+    if((this.x != x || this.y != y) && !disableFlipCheck && !this.isDead) {
       this.status = "move"
     }
 

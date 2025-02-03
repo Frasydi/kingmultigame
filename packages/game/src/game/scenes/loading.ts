@@ -25,6 +25,13 @@ export class LoadingScene extends Scene {
             frameWidth: 128,
             frameHeight: 128,
         });
+        this.load.spritesheet('knight1_dead', 'player/Knight_1/Dead.png', {
+            frameWidth: 128,
+            frameHeight: 128,
+        });
+
+
+
         this.load.spritesheet('knight2_idle', 'player/Knight_2/Idle.png', {
             frameWidth: 128,
             frameHeight: 128,
@@ -42,6 +49,14 @@ export class LoadingScene extends Scene {
             frameWidth: 128,
             frameHeight: 128,
         });
+
+        this.load.spritesheet('knight2_dead', 'player/Knight_2/Dead.png', {
+            frameWidth: 128,
+            frameHeight: 128,
+        });
+
+
+
         this.load.image('background', 'bg.png');
         this.load.image({
             key: 'tiles',
@@ -58,6 +73,7 @@ export class LoadingScene extends Scene {
         this.load.audio("attack", "audio/attack.mp3")
         this.load.audio("hit", "audio/hit.mp3")
         this.load.audio("chest-destroy", "audio/chest-destroy.mp3")
+        this.load.audio("death", "audio/death.mp3")
 
 
     }

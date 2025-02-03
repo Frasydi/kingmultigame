@@ -141,7 +141,7 @@ export class GameGateway {
         if(client.connected) {
           client.emit('game_over', { attacker });
         }
-        client.broadcast.emit('player_disconnect', client.id);
+        client.broadcast.emit('game_over_other', {id : client.id, attacker });
 
       } else {
         client.broadcast.emit('damage', player)

@@ -7,6 +7,7 @@ class Actor extends Phaser.GameObjects.Sprite {
     damaged: boolean = false
     playerText: Phaser.GameObjects.Text;
     ancor: "right" | "left" = "right"
+    isDead : boolean = false;
 
 
 
@@ -56,7 +57,22 @@ class Actor extends Phaser.GameObjects.Sprite {
             frameRate: 3,
             duration : 1000
         })
+        this.anims.create({
+            key: "dead",
+            frames: this.anims.generateFrameNumbers(skin + "_dead"),
+            frameRate: 8,
+            duration : 1000
+        })
+
         this.play("idle")
+    }
+
+    public death(cb? : () => void) {
+        this.isDead = true
+        this.play("dead").once("animationcomplete", () => {
+            console.log("dead")
+            cb?.()
+        })
     }
 
     public destroy() {
@@ -79,6 +95,7 @@ class Actor extends Phaser.GameObjects.Sprite {
 
     public getDamage(value: number, direction?: 1 | -1): void {
         if (this.damaged) return
+        if(this.isDead) return
         
         this.scene.sound.play("hit")
 
@@ -126,7 +143,7 @@ class Actor extends Phaser.GameObjects.Sprite {
 
     update() {
 
-       
+        if(this.isDead) return
 
         if (this.ancor == "right") {
 

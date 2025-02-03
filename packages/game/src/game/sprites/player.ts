@@ -26,6 +26,7 @@ export default class Player extends Actor {
   update(): void {
     let isMove = false
     if (this.body == null) return
+    if(this.isDead) return
     if (this.status == "hurt") {
       this.scene.game.events.emit("player-knockback", { x: this.x, y: this.y, health: this.hp })
       
