@@ -83,12 +83,11 @@ class Actor extends Phaser.GameObjects.Sprite {
 
     public attack(): void {
         if (this.status == "attack") return
+        this.scene.sound.stopByKey("walk")
         this.status = "attack"
         this.scene.sound.play("attack")
         this.play("attack").once("animationcomplete", () => {
-            console.log("Attack finished")
             this.status = "idle"
-            this.play("idle")
         });
 
     }
@@ -96,7 +95,8 @@ class Actor extends Phaser.GameObjects.Sprite {
     public getDamage(value: number, direction?: 1 | -1): void {
         if (this.damaged) return
         if(this.isDead) return
-        
+
+        this.scene.sound.stopByKey("walk")
         this.scene.sound.play("hit")
 
         this.damaged = true
@@ -159,8 +159,10 @@ class Actor extends Phaser.GameObjects.Sprite {
         }
 
         if (this.status == "move" && this.anims.currentAnim?.key != "move") {
+           
             this.play("move")
         } else if (this.status == "idle" && this.anims.currentAnim?.key != "idle") {
+            this.scene.sound.stopByKey("walk")
             this.play("idle")
         } else if (this.status == "hurt" && this.anims.currentAnim?.key != "hurt") {
             this.play("hurt").once("animationcomplete", () => {

@@ -146,9 +146,9 @@ export class Game extends Scene {
                 }
 
                 const otplayer = this.otherPlayer.get(player.id)
-                if (otplayer == null) return
-
-                otplayer.setCur(player.x, player.y)
+                if (otplayer == null || this.player == null) return
+                const distance = Phaser.Math.Distance.Between(this.player.x, this.player.y, otplayer.x, otplayer.y);
+                otplayer.setCur(player.x, player.y, false, distance)
                 const timeout = setTimeout(() => {
                     if (otplayer.status == "attack") return
                     otplayer.status = "idle"

@@ -26,10 +26,10 @@ export default class Player extends Actor {
   update(): void {
     let isMove = false
     if (this.body == null) return
-    if(this.isDead) return
+    if (this.isDead) return
     if (this.status == "hurt") {
       this.scene.game.events.emit("player-knockback", { x: this.x, y: this.y, health: this.hp })
-      
+
     } else {
       this.getBody().setVelocity(0);
       if (this.isattackDelay) return
@@ -70,7 +70,12 @@ export default class Player extends Actor {
       }
 
       if (isMove && !this.isattackDelay) {
-        this.status = "move"
+        if(this.status != "move") {
+          this.scene.sound.play("walk", {
+            loop: true
+          })
+          this.status = "move"
+        }
         if (this.delayMoveSocket) return
         this.delayMoveSocket = true
         this.scene.game.events.emit("player-update", { x: this.x, y: this.y, health: this.hp })

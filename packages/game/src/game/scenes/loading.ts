@@ -74,6 +74,7 @@ export class LoadingScene extends Scene {
         this.load.audio("hit", "audio/hit.mp3")
         this.load.audio("chest-destroy", "audio/chest-destroy.mp3")
         this.load.audio("death", "audio/death.mp3")
+        this.load.audio("walk", "audio/walk.mp3")
 
 
     }
