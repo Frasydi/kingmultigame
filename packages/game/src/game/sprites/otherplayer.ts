@@ -19,7 +19,8 @@ export default class OtherPlayer extends Actor {
   }
 
   setCur(x: number, y: number, disableFlipCheck : boolean = false ) {
-
+    
+    this.setDepth(y)
 
     if(this.x != x && !disableFlipCheck) {
 

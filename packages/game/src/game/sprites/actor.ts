@@ -2,16 +2,15 @@ import { Physics } from "phaser";
 
 class Actor extends Phaser.GameObjects.Sprite {
     protected hp = 100;
-    status : "idle" | "attack" | "move" = "idle"
-    hpText : Phaser.GameObjects.Text
-    damaged : boolean = false
+    status: "hurt" | "idle" | "attack" | "move" = "idle"
+    hpText: Phaser.GameObjects.Text
+    damaged: boolean = false
     playerText: Phaser.GameObjects.Text;
-    ancor : "right" | "left" = "right"
-    knockback = false
-    
+    ancor: "right" | "left" = "right"
 
 
-    constructor(scene: Phaser.Scene, x: number, y: number, name : string,skin : string,frame?: string | number ) {
+
+    constructor(scene: Phaser.Scene, x: number, y: number, name: string, skin: string, frame?: string | number) {
         super(scene, x, y, "player", frame);
         this.scene = scene
         scene.add.existing(this);
@@ -23,31 +22,39 @@ class Actor extends Phaser.GameObjects.Sprite {
         this.initAnimations(skin);
         this.hpText = this.scene.add.text(this.x, this.y - this.height, this.hp.toString())
         this.playerText = this.scene.add.text(this.x, this.y - this.height, name)
+        this.hpText.setDepth(9999)
+        this.playerText.setDepth(9999)
 
     }
 
-    private initAnimations(skin : string): void {
+    private initAnimations(skin: string): void {
         this.anims.create({
-            key : "idle",
-            frames : this.anims.generateFrameNumbers(skin+"_idle"),
-            repeat : -1,
-            frameRate : 8,
-            
+            key: "idle",
+            frames: this.anims.generateFrameNumbers(skin + "_idle"),
+            repeat: -1,
+            frameRate: 8,
+
 
         })
 
         this.anims.create({
-            key : "attack",
-            frames : this.anims.generateFrameNumbers(skin+"_attack"),
-            frameRate : 8,
-            
+            key: "attack",
+            frames: this.anims.generateFrameNumbers(skin + "_attack"),
+            frameRate: 8,
+
         })
         this.anims.create({
-            key : "move",
-            frames : this.anims.generateFrameNumbers(skin+"_move"),
-            frameRate : 8,
-            repeat : -1,
-            skipMissedFrames : true
+            key: "move",
+            frames: this.anims.generateFrameNumbers(skin + "_move"),
+            frameRate: 8,
+            repeat: -1,
+            skipMissedFrames: true
+        })
+        this.anims.create({
+            key: "hurt",
+            frames: this.anims.generateFrameNumbers(skin + "_hurt"),
+            frameRate: 3,
+            duration : 1000
         })
         this.play("idle")
     }
@@ -58,8 +65,8 @@ class Actor extends Phaser.GameObjects.Sprite {
         super.destroy()
     }
 
-    public attack() : void {
-        if(this.status == "attack") return
+    public attack(): void {
+        if (this.status == "attack") return
         this.status = "attack"
         this.scene.sound.play("attack")
         this.play("attack").once("animationcomplete", () => {
@@ -67,12 +74,14 @@ class Actor extends Phaser.GameObjects.Sprite {
             this.status = "idle"
             this.play("idle")
         });
-        
+
     }
 
-    public getDamage(value: number, direction? : 1 | -1): void {
-        if(this.damaged) return
+    public getDamage(value: number, direction?: 1 | -1): void {
+        if (this.damaged) return
+        
         this.scene.sound.play("hit")
+
         this.damaged = true
         this.scene.tweens.add({
             targets: this,
@@ -80,11 +89,6 @@ class Actor extends Phaser.GameObjects.Sprite {
             repeat: 3,
             yoyo: true,
             alpha: 0.5,
-            onStart: () => {
-                if (value) {
-                   
-                }
-            },
             onComplete: () => {
                 this.setAlpha(1);
                 this.damaged = false
@@ -95,17 +99,18 @@ class Actor extends Phaser.GameObjects.Sprite {
         this.hpText.setText(this.hp.toString());
 
 
-        if(this.body && direction != null && !this.knockback) {
-            this.knockback = true
+        if (this.body && direction != null && this.status != "hurt") {
+            
+            this.status = "hurt"
             this.body.velocity.x = 500 * direction;
-            console.log(this.body.velocity.x)
+            
             setTimeout(() => {
-                if(this.body == null) return
-                this.knockback = false
-                this.body.velocity.x = 0;    
-
+                if (this.body == null) return
+                this.body.velocity.x = 0;
                 
             }, 300)
+
+            
         }
 
     }
@@ -114,35 +119,38 @@ class Actor extends Phaser.GameObjects.Sprite {
     }
 
     public setHPValue(value: number) {
-        
+
         this.hp = value;
         this.hpText.setText(this.hp.toString());
     }
 
     update() {
 
-        if(this.knockback) {
-            this.scene.game.events.emit("player-knockback", { x: this.x, y: this.y, health: this.hp })
-        }
+       
 
-        if(this.ancor == "right") {
+        if (this.ancor == "right") {
 
             this.hpText.setPosition(this.x - this.width * 0.2, this.y - this.height * 0.1);
-            this.hpText.setOrigin(0.8, 0.5);  
+            this.hpText.setOrigin(0.8, 0.5);
             this.playerText.setPosition(this.x - this.width * 0.2, this.y - this.height * 0.25);
             this.playerText.setOrigin(0.8, 0.5);
         } else {
             this.hpText.setPosition(this.x - this.width * -0.2, this.y - this.height * 0.1);
-            this.hpText.setOrigin(0.8, 0.5);  
+            this.hpText.setOrigin(0.8, 0.5);
             this.playerText.setPosition(this.x - this.width * -0.2, this.y - this.height * 0.25);
             this.playerText.setOrigin(0.8, 0.5);
         }
 
-        if(this.status == "move" && this.anims.currentAnim?.key != "move") {
+        if (this.status == "move" && this.anims.currentAnim?.key != "move") {
             this.play("move")
-        } else if(this.status == "idle" && this.anims.currentAnim?.key != "idle") {
+        } else if (this.status == "idle" && this.anims.currentAnim?.key != "idle") {
             this.play("idle")
-        } 
+        } else if (this.status == "hurt" && this.anims.currentAnim?.key != "hurt") {
+            this.play("hurt").once("animationcomplete", () => {
+                this.status = "idle"
+            })
+        }
+
     }
 
     protected checkFlip(): void {
@@ -158,7 +166,7 @@ class Actor extends Phaser.GameObjects.Sprite {
     }
 
     onMove() {
-        if(this.status == "attack") return
+        if (this.status == "attack") return
         this.status = "move"
         this.play("move")
     }

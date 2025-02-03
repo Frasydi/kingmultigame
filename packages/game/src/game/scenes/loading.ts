@@ -21,6 +21,10 @@ export class LoadingScene extends Scene {
             frameHeight: 128,
             
         });
+        this.load.spritesheet('knight1_hurt', 'player/Knight_1/Hurt.png', {
+            frameWidth: 128,
+            frameHeight: 128,
+        });
         this.load.spritesheet('knight2_idle', 'player/Knight_2/Idle.png', {
             frameWidth: 128,
             frameHeight: 128,
@@ -33,7 +37,10 @@ export class LoadingScene extends Scene {
         this.load.spritesheet('knight2_move', 'player/Knight_2/Run.png', {
             frameWidth: 128,
             frameHeight: 128,
-            
+        });
+        this.load.spritesheet('knight2_hurt', 'player/Knight_2/Hurt.png', {
+            frameWidth: 128,
+            frameHeight: 128,
         });
         this.load.image('background', 'bg.png');
         this.load.image({

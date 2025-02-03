@@ -26,7 +26,10 @@ export default class Player extends Actor {
   update(): void {
     let isMove = false
     if (this.body == null) return
-    if (!this.knockback) {
+    if (this.status == "hurt") {
+      this.scene.game.events.emit("player-knockback", { x: this.x, y: this.y, health: this.hp })
+      
+    } else {
       this.getBody().setVelocity(0);
       if (this.isattackDelay) return
       if (this.keyW?.isDown) {

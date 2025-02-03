@@ -26,6 +26,7 @@ export class Game extends Scene {
     myName: string = ""
     private spawnPoint: number = -1
     private otherPlayerTimeOut: Map<String, ReturnType<typeof setTimeout>> = new Map()
+    private wallSprites: Array<{sprite : Phaser.Physics.Arcade.Sprite, collides : boolean}> = [];
 
 
     constructor() {
@@ -37,15 +38,37 @@ export class Game extends Scene {
         this.tileset = this.map.addTilesetImage('map', 'tiles') as Tilemaps.Tileset;
         // this.groundLayer = this.map.createLayer('ground', this.tileset, 0, 0);
         this.map.createLayer('ground', this.tileset, 0, 0);
+
+        // Create wall layer (but don't render it as tiles)
         this.wallsLayer = this.map.createLayer('wall', this.tileset, 0, 0);
-        this.wallsLayer?.setCollisionByProperty({ collides: true });
-        this.wallsLayer?.setDepth(2)
+        this.wallsLayer?.setVisible(false); // Hide the original tile layer
+
+        // Create wall sprites from the wall tile layer
+        if (this.wallsLayer) {
+            this.wallsLayer.forEachTile(tile => {
+                if (tile.index !== -1) { // Skip empty tiles
+                    // Calculate position (adjust for tile center if needed)
+                    const x = tile.pixelX + tile.width / 2;
+                    const y = tile.pixelY + tile.height / 2;
+
+                    // Create a sprite using the tile's texture frame
+                    const sprite = this.physics.add.sprite(x, y, 'tiles_spr', tile.index-1);
+                    sprite.setDepth(y); // Depth based on bottom edge
+                    sprite.body.setImmovable(true); // Make it immovable for collision
+                    this.wallSprites.push({sprite, collides : tile.properties.collides});
+                }
+            });
+        }
+
+        // Set up collisions between player and wall sprites
+
         this.physics.world.setBounds(0, 0, this.wallsLayer?.width || 0, this.wallsLayer?.height || 0);
         this.sound.unlock();
         this.sound.play("music", {
             loop: true
         })
-        // this.showDebugWalls();
+        this.showDebugWalls();
+
     }
 
     private initSocket(): void {
@@ -103,11 +126,13 @@ export class Game extends Scene {
             this.initChests(id)
         })
 
-        this.socket.on("knockback", (player : PlayerSocket) => {
+        this.socket.on("knockback", (player: PlayerSocket) => {
             if (this.otherPlayer.has(player.id)) {
                 const otplayer = this.otherPlayer.get(player.id)
-                if(otplayer == null) return
-                otplayer.status = "idle"
+                if (otplayer == null) return
+                // if(otplayer.status != "hurt") {
+                //     otplayer.status = "hurt"
+                // }
                 otplayer.setCur(player.x, player.y, true)
             }
         })
@@ -143,19 +168,20 @@ export class Game extends Scene {
         })
 
         this.socket.on("player_disconnect", (players: string) => {
-            console.log(players)
             this.otherPlayer.get(players)?.destroy()
             this.otherPlayer.delete(players)
         })
 
         this.socket.on("new_player", (player: PlayerSocket) => {
-            console.log(player.id)
             this.createOtherPlayer(player.id, player.x, player.y, player.health, player.name)
         })
 
         this.socket.on("damage", (player: PlayerSocket) => {
             if (this.otherPlayer.has(player.id)) {
-                this.otherPlayer.get(player.id)?.setHPValue(player.health)
+                const otplayer = this.otherPlayer.get(player.id)
+                if (otplayer == null) return 
+                otplayer.status = "hurt"
+                otplayer.setHPValue(player.health)
             } else {
                 if (player.id == this.myId) {
                     this.player.setHPValue(player.health)
@@ -172,7 +198,6 @@ export class Game extends Scene {
         });
 
         this.socket.on('game_over', ({ attacker }: { attacker: string }) => {
-            console.log('Game over by:', attacker);
             if (this.player) {
                 this.player.destroy();
                 // Verify attacker exists before camera operation
@@ -192,19 +217,18 @@ export class Game extends Scene {
 
 
 
-    // private showDebugWalls(): void {
-    //     const debugGraphics = this.add.graphics().setAlpha(0.7);
-    //     this.wallsLayer?.renderDebug(debugGraphics, {
-    //         tileColor: null,
-    //         collidingTileColor: new Phaser.Display.Color(243, 234, 48, 255),
-    //     });
-    // }
+    private showDebugWalls(): void {
+        const debugGraphics = this.add.graphics().setAlpha(0.7);
+       
+    }
 
     private createPlayer(x: number, y: number) {
         this.player = new Player(this, x, y, this.myName);
-        this.player.setDepth(1)
+        this.player.setDepth(this.player.y + this.player.height);
 
     }
+
+   
 
     private createOtherPlayer(id: string, x: number, y: number, health: number, name: string) {
         const otherPlayer = new OtherPlayer(this, x, y, health, name, id)
@@ -225,8 +249,9 @@ export class Game extends Scene {
                 }
             })
         }
+
         // this.physics.add.collider(otherPlayer, this.player)
-        this.physics.add.collider(otherPlayer, this.wallsLayer as any)
+        this.physics.add.collider(otherPlayer, this.wallSprites.filter(el => el.collides).map(el => el.sprite));
         this.otherPlayer.set(id, otherPlayer)
 
     }
@@ -241,9 +266,11 @@ export class Game extends Scene {
         this.initSocket()
         this.initMap()
         this.game.events.on("player-knockback", ({ x, y }: { x: number, y: number }) => {
+            this.player.setDepth(this.player.y);
             this.socket.emit("knockback", { x, y })
         })
         this.game.events.on("player-update", ({ x, y }: { x: number, y: number }) => {
+            this.player.setDepth(this.player.y);
             this.socket.emit("move", { x, y })
         })
         this.game.events.on("player-attack", () => {
@@ -258,7 +285,8 @@ export class Game extends Scene {
             }) => {
                 this.createPlayer(x, y)
                 this.spawnPoint = -1
-                this.physics.add.collider(this.player, this.wallsLayer as any);
+                this.physics.add.collider(this.player, this.wallSprites.filter(el => el.collides).map(el => el.sprite));
+
                 this.initCamera()
                 this.initChests(chestId)
 
@@ -280,10 +308,6 @@ export class Game extends Scene {
                         }
                     })
                 })
-
-
-
-
             })
         })
 
@@ -313,7 +337,6 @@ export class Game extends Scene {
             this.chests = null
         }
 
-        console.log(id)
 
         if (id == -1) {
 
@@ -324,15 +347,18 @@ export class Game extends Scene {
             this.map.filterObjects('chest', obj => obj.name === 'chestpoint') as any,
         );
 
-        console.log(id)
-        console.log(chestPoints[id])
 
         const chest = this.physics.add.sprite(chestPoints[id].x, chestPoints[id].y, "tiles_spr", 993).setScale(1.5)
+        
+        chest.setDepth(chest.y - 55)
+
+
         this.chests = chest
 
-        if (this.player == null) {
-            return
-        }
+        
+
+        if (this.player == null) return
+        
 
         this.physics.add.overlap(this.player, chest, (_obj1, obj2) => {
             if (this.player.status != "attack") return
@@ -344,19 +370,6 @@ export class Game extends Scene {
 
 
         })
-
-
-        // this.chests = chestPoints.map(chestPoint =>
-        //   this.physics.add.sprite(chestPoint.x, chestPoint.y, 'tiles_spr', 993).setScale(1.5),
-        // );
-        // this.chests.forEach(chest => {
-        //   this.physics.add.overlap(this.player, chest, (obj1, obj2) => {
-        //     if(this.player.status != "attack") return
-        //     this.game.events.emit("score-add")
-        //     obj2.destroy();
-        //     console.log("Update")
-        //   });
-        // });
 
     }
 
