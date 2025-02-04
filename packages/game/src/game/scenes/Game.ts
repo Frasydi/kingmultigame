@@ -386,7 +386,6 @@ export class Game extends Scene {
 
 
         if (id == -1) {
-
             return
         }
 
